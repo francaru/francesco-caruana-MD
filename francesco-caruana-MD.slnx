@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="src/ServiceA/ServiceA.csproj" Id="6c4c6ced-37c0-4c53-b51a-20e7eab0a460" />
+  <Project Path="src/ServiceB/ServiceB.csproj" Id="64fbc717-02a0-4740-ac5e-cc3d8ac77c4f" />
+  <Project Path="tests/Commons.Tests/Commons.Tests.csproj" Id="cc3dd098-1bb5-4701-b0da-1905262cda6c" />
+  <Project Path="tests/ServiceA.Tests/ServiceA.Tests.csproj" Id="831e2060-ee62-42c7-b035-027f530473f9" />
+  <Project Path="tests/ServiceB.Tests/ServiceB.Tests.csproj" Id="16dd1c70-db08-495c-b163-285a16f1fcd9" />
+</Solution>
