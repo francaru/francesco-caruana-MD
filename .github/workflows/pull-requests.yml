@@ -6,9 +6,6 @@ on:
       - main
   pull_request:
 
-env:
-  DOTNET_VERSION: '10.0'
-
 jobs:
 
   service-a-tests:
@@ -68,7 +65,7 @@ jobs:
         run: dotnet build src/ServiceB/ServiceB.csproj --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test tests/ServiceB.Tests/ServiceB.Tests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage"
+        run: dotnet test tests/ServiceB.Tests/ServiceB.Tests.csproj
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
