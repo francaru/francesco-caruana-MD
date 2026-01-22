@@ -37,7 +37,7 @@ jobs:
         run: dotnet build src/ServiceA/ServiceA.csproj --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test --configuration Release --no-build --collect:"XPlat Code Coverage"
+        run: dotnet test tests/ServiceA.Tests/ServiceA.Tests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -72,7 +72,7 @@ jobs:
         run: dotnet build src/ServiceB/ServiceB.csproj --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test tests/ServiceB.Tests --configuration Release --no-build --collect:"XPlat Code Coverage"
+        run: dotnet test tests/ServiceB.Tests/ServiceB.Tests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
