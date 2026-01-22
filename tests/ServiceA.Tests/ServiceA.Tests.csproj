@@ -9,8 +9,6 @@
 
   <ItemGroup>
 	<PackageReference Include="MSTest" Version="4.0.1" />
-	<PackageReference Include="MSTest.TestAdapter" Version="4.0.1" />
-	<PackageReference Include="MSTest.TestFramework" Version="4.0.1" />
 	<PackageReference Include="coverlet.collector" Version="6.0.0" />
   </ItemGroup>
 

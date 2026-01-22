@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+env:
+  DOTNET_VERSION: '10.0'
+
 jobs:
 
   service-a-tests:
@@ -24,6 +27,8 @@ jobs:
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore
         run: dotnet restore src/ServiceA/ServiceA.csproj
@@ -32,7 +37,7 @@ jobs:
         run: dotnet build src/ServiceA/ServiceA.csproj --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test tests/ServiceA.Tests/ServiceA.Tests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage"
+        run: dotnet test tests/ServiceA.Tests/ServiceA.Tests.csproj --configuration Release --collect:"XPlat Code Coverage"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -57,6 +62,8 @@ jobs:
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore
         run: dotnet restore src/ServiceB/ServiceB.csproj
@@ -65,7 +72,7 @@ jobs:
         run: dotnet build src/ServiceB/ServiceB.csproj --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test tests/ServiceB.Tests/ServiceB.Tests.csproj
+        run: dotnet test tests/ServiceB.Tests/ServiceB.Tests.csproj --configuration Release --collect:"XPlat Code Coverage"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
