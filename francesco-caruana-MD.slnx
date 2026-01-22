@@ -4,6 +4,10 @@
     <File Path=".gitignore" />
     <File Path="README.md" />
   </Folder>
+  <Folder Name="/Solution Items/.github/" />
+  <Folder Name="/Solution Items/.github/workflows/">
+    <File Path="pull-requests.yml" />
+  </Folder>
   <Project Path="src/ServiceA/ServiceA.csproj" Id="6c4c6ced-37c0-4c53-b51a-20e7eab0a460" />
   <Project Path="src/ServiceB/ServiceB.csproj" Id="64fbc717-02a0-4740-ac5e-cc3d8ac77c4f" />
   <Project Path="tests/Commons.Tests/Commons.Tests.csproj" Id="cc3dd098-1bb5-4701-b0da-1905262cda6c" />

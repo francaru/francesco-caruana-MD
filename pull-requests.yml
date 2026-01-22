@@ -1,0 +1,82 @@
+name: build-and-test
+
+on:
+  push:
+	branches:
+	  - main
+  pull_request:
+
+env:
+  DOTNET_VERSION: '10.0.2'
+
+jobs:
+
+  service-a-tests:
+	name: ServiceA – ${{ matrix.os }}
+	runs-on: ${{ matrix.os }}
+
+	strategy:
+	  matrix:
+		os:
+		  - ubuntu-latest
+		  - windows-latest
+		  - macOS-latest
+
+	steps:
+	  - uses: actions/checkout@v4
+
+	  - name: Setup .NET
+		uses: actions/setup-dotnet@v4
+		with:
+		  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+	  - name: Restore
+		run: dotnet restore src/ServiceA/ServiceA.csproj
+
+	  - name: Build
+		run: dotnet build src/ServiceA/ServiceA.csproj --configuration Release --no-restore
+
+	  - name: Test
+		run: dotnet test tests/ServiceA.Tests/ServiceA.Tests.csproj --no-build --collect:"XPlat Code Coverage"
+
+	  
+	  - name: Upload coverage report
+		uses: actions/upload-artifact@v4
+		with:
+		  name: coverage-service-a-${{ matrix.os }}
+		  path: TestResults/**/coverage.cobertura.xml
+
+
+  service-b-tests:
+	name: ServiceB – ${{ matrix.os }}
+	runs-on: ${{ matrix.os }}
+
+	strategy:
+	  matrix:
+		os:
+		  - ubuntu-latest
+		  - windows-latest
+		  - macOS-latest
+
+	steps:
+	  - uses: actions/checkout@v4
+
+	  - name: Setup .NET
+		uses: actions/setup-dotnet@v4
+		with:
+		  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+	  - name: Restore
+		run: dotnet restore src/ServiceB/ServiceB.csproj
+
+	  - name: Build
+		run: dotnet build src/ServiceB/ServiceB.csproj --configuration Release --no-restore
+
+	  - name: Test
+		run: dotnet test tests/ServiceB.Tests/ServiceB.Tests.csproj --no-build --collect:"XPlat Code Coverage"
+
+	  - name: Upload coverage report
+		uses: actions/upload-artifact@v4
+		with:
+		  name: coverage-service-b-${{ matrix.os }}
+		  path: TestResults/**/coverage.cobertura.xml
