@@ -20,6 +20,6 @@ public sealed class ServiceATests
             );
         });
 
-        StringAssert.Contains("Hello, World! I am Service A!", output);
+        Assert.Contains("Hello, World! I am Service A!", output);
     }
 }
