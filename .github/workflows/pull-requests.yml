@@ -39,7 +39,6 @@ jobs:
       - name: Test
         run: dotnet test tests/ServiceA.Tests/ServiceA.Tests.csproj --no-build --collect:"XPlat Code Coverage"
 
-		
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
@@ -75,7 +74,6 @@ jobs:
       - name: Test
         run: dotnet test tests/ServiceB.Tests/ServiceB.Tests.csproj --no-build --collect:"XPlat Code Coverage"
 
-		
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
