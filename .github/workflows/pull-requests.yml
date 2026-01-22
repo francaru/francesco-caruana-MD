@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - main
-    pull_request:
+  pull_request:
 
 env:
-  DOTNET_VERSION: '10.0.2'
+  DOTNET_VERSION: '10.0'
 
 jobs:
 
@@ -37,13 +37,13 @@ jobs:
         run: dotnet build src/ServiceA/ServiceA.csproj --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test tests/ServiceA.Tests/ServiceA.Tests.csproj --no-build --collect:"XPlat Code Coverage"
+        run: dotnet test tests/ServiceA.Tests/ServiceA.Tests.csproj --configuration Release --collect:"XPlat Code Coverage"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-service-a-${{ matrix.os }}
-          path: TestResults/**/coverage.cobertura.xml
+          path: tests/ServiceA.Tests/TestResults/**/coverage.cobertura.xml
 
 
   service-b-tests:
@@ -72,10 +72,10 @@ jobs:
         run: dotnet build src/ServiceB/ServiceB.csproj --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test tests/ServiceB.Tests/ServiceB.Tests.csproj --no-build --collect:"XPlat Code Coverage"
+        run: dotnet test tests/ServiceB.Tests/ServiceB.Tests.csproj --configuration Release --collect:"XPlat Code Coverage"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-service-b-${{ matrix.os }}
-          path: TestResults/**/coverage.cobertura.xml
+          path: tests/ServiceB.Tests/TestResults/**/coverage.cobertura.xml
