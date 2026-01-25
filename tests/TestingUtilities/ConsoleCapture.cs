@@ -1,4 +1,4 @@
-﻿namespace Commons.Tests;
+﻿namespace TestingUtilities;
 
 public static class ConsoleCapture
 {
