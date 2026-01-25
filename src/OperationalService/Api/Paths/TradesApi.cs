@@ -6,35 +6,54 @@ public class TradesApi
 {
     private const string Route = "/trades";
 
-    static TradeGet Get(HttpContext httpContext)
+    static IResult CreateTrade(TradeCreate tradeCreate)
     {
-        return new TradeGet
-        {
-            Id = 1,
-            Name = Guid.NewGuid().ToString(),
-        };
+        return Results.Ok(
+            new TradeGet()
+            {
+                Id = 2,
+                Name = tradeCreate.Name
+            }
+        );
     }
 
-    static TradesList Collect(HttpContext httpContext)
+    static IResult ListTrades()
     {
-        return new TradesList() 
-        { 
-            Data = Enumerable.Range(1, 5).Select(index => new TradeGet
+        return Results.Ok(
+            new TradesList()
             {
-                Id = index,
+                Data = Enumerable.Range(1, 5).Select(index => new TradeGet
+                {
+                    Id = index,
+                    Name = Guid.NewGuid().ToString(),
+                }),
+                Pagination = new Pagination()
+                {
+                    PageNumber = 1,
+                    PageSize = 10,
+                    TotalCount = 10
+                },
+            }
+        );
+    }
+
+    static IResult GetTrade(int id)
+    {
+        return Results.Ok(
+            new TradeGet
+            {
+                Id = id,
                 Name = Guid.NewGuid().ToString(),
-            }),
-            Pagination = new Pagination() { 
-                PageNumber = 1,
-                PageSize = 10, 
-                TotalCount = 10 
-            },
-        };
+            }
+        );
     }
 
     public static void AddRoutes(WebApplication app)
     {
-        app.MapGet(Route, Collect).WithName("CollectWeatherForecasts");
-        app.MapGet($"{Route}/{"{id}"}", Get).WithName("GetWeatherForecast");
+        app.MapPost(Route, CreateTrade).WithName("CreateTrade");
+
+        app.MapGet(Route, ListTrades).WithName("ListTrades");
+        
+        app.MapGet($"{Route}/{{id:int}}", GetTrade).WithName("GetTrade");
     }
 }

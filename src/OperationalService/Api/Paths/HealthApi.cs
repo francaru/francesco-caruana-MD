@@ -6,16 +6,18 @@ public class HealthApi
 {
     private const string Route = "/health";
 
-    static Health Get(HttpContext httpContext)
+    static IResult CheckHealth()
     {
-        return new Health()
-        {
-            UpTime = DateTime.UtcNow - App.StartTime
-        };
+        return Results.Ok(
+            new Health()
+            {
+                UpTime = DateTime.UtcNow - App.StartTime
+            }
+        );
     }
 
     public static void AddRoutes(WebApplication app)
     {
-        app.MapGet(Route, Get).WithName("Health");
+        app.MapGet(Route, CheckHealth).WithName("CheckHealth");
     }
 }
