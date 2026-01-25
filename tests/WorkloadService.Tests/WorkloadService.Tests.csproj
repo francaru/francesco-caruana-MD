@@ -13,14 +13,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceA\ServiceA.csproj" />
-    <ProjectReference Include="..\Commons.Tests\Commons.Tests.csproj" />
+    <ProjectReference Include="..\..\src\WorkloadService\WorkloadService.csproj" />
+    <ProjectReference Include="..\TestingUtilities\TestingUtilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
-	<Using Include="Commons.Tests" />
-	<Using Include="ServiceA" />
+	<Using Include="TestingUtilities" />
+	<Using Include="WorkloadService" />
   </ItemGroup>
 
 </Project>
