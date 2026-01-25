@@ -13,13 +13,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\OperationalService\OperationalService.csproj" />
     <ProjectReference Include="..\TestingUtilities\TestingUtilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
 	<Using Include="TestingUtilities" />
-	<Using Include="OperationalServiceOld" />
+	<Using Include="OperationalService" />
   </ItemGroup>
 
 </Project>
