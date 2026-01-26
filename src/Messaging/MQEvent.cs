@@ -2,13 +2,7 @@
 
 public sealed record MQEvent<T> where T : MQEventBody 
 {
-    public T Body { get; init; }
+    public required T Body { get; init; }
 
-    public MQEventRecipient Recipient { get; init; }
-
-    public MQEvent(T body, MQEventRecipient recipient)
-    {
-        Body = body;
-        Recipient = recipient;
-    }
+    public required MQEventRecipient Recipient { get; init; }
 }

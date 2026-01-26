@@ -1,4 +1,5 @@
-﻿using Messaging;
+﻿using Database;
+using Messaging;
 using Messaging.LifecycleEvents;
 using Messaging.WorkEvents;
 
@@ -8,46 +9,41 @@ public class Workload
 {
     const string serviceName = "WorkloadService";
 
-    void DoWork(MQClient mqClient, MQEventInfo eventInfo, DoWorkEventBody? eventBody)
+    public static void TradeDoWork(MQClient mqClient, MQEventInfo eventInfo, TradeDoWorkEventBody? eventBody)
     {
-        Console.WriteLine($"Received instruction by `{eventInfo.Sender.ServiceName}` to start work!!");
+        // Replace with logging.
+        Console.WriteLine($"Starting trade: {eventBody!.TradeId}");
 
         mqClient.Produce(
-            toQueues: ["OperationalService.OnStatusChange"],
-            new StatusChangeEventBody(previousStatus: "starting", newStatus: "running")
+            toQueues: ["OperationalService.BusinessLogic.Service.TradesService::OnStatusChange"],
+            new TradeStatusChangeEventBody() {
+                TradeId = eventBody!.TradeId, 
+                PreviousStatus = "starting", 
+                NewStatus = "running" 
+            }
         );
 
-        for (int i = 0; i < 10; i++)
-        {
-            Thread.Sleep(1000);
-
-            mqClient.Produce(
-                toQueues: ["OperationalService.OnProgressChange"],
-                new ProgressChangeEventBody(currentStatus: "running", progressPercent: (i + 1.0) / 10.0)
-            );
-        }
+        Thread.Sleep(10000);
 
         mqClient.Produce(
-            toQueues: ["OperationalService.OnStatusChange"],
-            new StatusChangeEventBody(previousStatus: "running", newStatus: "complete")
+            toQueues: ["OperationalService.BusinessLogic.Service.TradesService::OnStatusChange"],
+            new TradeStatusChangeEventBody()
+            {
+                TradeId = eventBody!.TradeId,
+                PreviousStatus = "running",
+                NewStatus = "complete"
+            }
         );
-
-        Console.WriteLine($"Sent completion confirmation to `{eventInfo.Sender.ServiceName}`!!");
+        
+        // Replace with logging.
+        Console.WriteLine($"Completed trade: {eventBody!.TradeId}");
     }
 
     static void Main(string[] args)
     {
-        string doWorkQueue = $"{serviceName}.DoWork";
-
-        using MQClient mqClient = MQClient.GetInstance(serviceName: serviceName);
-
-        mqClient.CreateQueue(queueName: doWorkQueue);
-        mqClient.Consume(
-            onQueue: doWorkQueue,
-            (MQEventInfo eventInfo, DoWorkEventBody? eventBody) => {
-                new Workload().DoWork(mqClient, eventInfo, eventBody);
-            }
-        );
+        using var mqClient = MQClient
+            .Connect(serviceName: serviceName)
+            .Subscribe();
 
         Console.ReadKey();
     }
