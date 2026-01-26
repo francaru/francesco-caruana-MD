@@ -18,3 +18,8 @@ docker run -idt --rm --name postgres -e POSTGRES_USER=user -e POSTGRES_PASSWORD=
 2. Set the default project to `OperationalService`.
 3. Run `Add-Migration "<MessageWithNoSpaces>"` to generate a new revision.
 4. Run `Update-Database` to apply the revision onto the connected database.
+
+
+# OpenTelemetery Visualisation
+
+docker run -idt --rm --name jaeger -p 16686:16686 -p 6831:6831/udp jaegertracing/all-in-one:1.21

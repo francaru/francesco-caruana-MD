@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.15.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.Jaeger" Version="1.5.1" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0" />

@@ -16,7 +16,9 @@ public class TradesController(DatabaseContext dbContext) : ControllerBase
     public IActionResult GetAll(int page = 1, int pageSize = 10)
     {
         var tradesService = new TradesService(dbContext: dbContext);
+
         var trades = tradesService.CollectTrades(page: page, pageSize: pageSize);
+
         var totalItems = tradesService.CountTrades();
 
         var pagination = new Pagination()
