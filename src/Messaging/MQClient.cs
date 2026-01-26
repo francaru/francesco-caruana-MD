@@ -1,4 +1,6 @@
-﻿using RabbitMQ.Client;
+﻿using Database;
+using Microsoft.Extensions.DependencyInjection;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
@@ -9,20 +11,22 @@ namespace Messaging;
 public class MQClient : IDisposable
 {
     private static MQClient? instance;
-
     private readonly ConnectionFactory factory;
     private readonly IConnection connection;
     private readonly IChannel channel;
-    
-    private string ServiceName { get; init; }
 
-    MQClient(string serviceName) 
+    private IServiceProvider? ServiceProvider { get; init; }
+
+    public string ServiceName { get; init; }
+
+    MQClient(string serviceName, IServiceProvider? serviceProvider) 
     {
         factory = new() { HostName = "localhost" };
         connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
         channel = connection.CreateChannelAsync().GetAwaiter().GetResult();
         
         ServiceName = serviceName;
+        ServiceProvider = serviceProvider;
     }
 
     public virtual void Dispose()
@@ -33,12 +37,17 @@ public class MQClient : IDisposable
 
     public static MQClient GetInstance()
     {
-        return GetInstance(Guid.NewGuid().ToString());
+        if (instance == null)
+        {
+            throw new InvalidOperationException("First call to GetInstance requires a service name.");
+        }
+
+        return Connect(instance.ServiceName, instance.ServiceProvider);
     }
 
-    public static MQClient GetInstance(string serviceName)
+    public static MQClient Connect(string serviceName, IServiceProvider? serviceProvider = null)
     {
-        instance ??= new(serviceName: serviceName);
+        instance ??= new(serviceName: serviceName, serviceProvider: serviceProvider);
 
         return instance;
     }
@@ -54,26 +63,44 @@ public class MQClient : IDisposable
         );
     }
 
-    public async void Consume<T>(string onQueue, params Action<MQEventInfo, T?>[] consumerActions) where T : MQEventBody
+    public async void Consume<T>(string onQueue, params Action<MQEventInfo, DatabaseContext, T?>[] consumerActions) where T : MQEventBody
     {
-        AsyncEventingBasicConsumer consumer = new(channel);
+        var consumer = new AsyncEventingBasicConsumer(channel);
 
         consumer.ReceivedAsync += (_, eventArgs) =>
         {
-            byte[] body = eventArgs.Body.ToArray();
-            JsonNode? message = JsonNode.Parse(Encoding.UTF8.GetString(body));
+            var body = eventArgs.Body.ToArray();
+            var message = JsonNode.Parse(Encoding.UTF8.GetString(body));
 
             if (message is not null)
             {
-                MQEvent<T>? mqEvent = JsonSerializer.Deserialize<MQEvent<T>>(message);
+                var mqEvent = JsonSerializer.Deserialize<MQEvent<T>>(message);
 
                 if (mqEvent is not null)
                 {
-                    MQEventInfo queueEventInfo = new(queueName: onQueue, sender: mqEvent.Recipient);
+                    var queueEventInfo = new MQEventInfo() { 
+                        QueueName = onQueue, 
+                        Sender = mqEvent.Recipient 
+                    };
 
-                    foreach (Action<MQEventInfo, T?> consumerAction in consumerActions)
+                    foreach (var consumerAction in consumerActions)
                     {
-                        new Thread(() => consumerAction(queueEventInfo, mqEvent.Body)).Start();
+                        new Thread(() =>
+                        {
+                            using var scope = (ServiceProvider is null) switch
+                            {
+                                true => null,
+                                false => ServiceProvider.CreateScope()
+                            };
+
+                            var dbContext = (scope is null) switch
+                            {
+                                true => null,
+                                false => scope.ServiceProvider.GetRequiredService<DatabaseContext>()
+                            };
+
+                            consumerAction(queueEventInfo, dbContext!, mqEvent.Body);
+                        }).Start();
                     }
                 }
             }
@@ -86,13 +113,19 @@ public class MQClient : IDisposable
 
     public async void Produce<T>(string[] toQueues, T mqEventBody) where T : MQEventBody
     {
-        MQEventRecipient mqRecipient = new(serviceName: ServiceName);
-        MQEvent<T> mqEvent = new(body: mqEventBody, recipient: mqRecipient);
+        var mqRecipient = new MQEventRecipient() {
+            ServiceName = ServiceName
+        };
 
-        string message = JsonSerializer.Serialize(mqEvent);
-        byte[] body = Encoding.UTF8.GetBytes(message);
+        var mqEvent = new MQEvent<T>() { 
+            Body = mqEventBody, 
+            Recipient = mqRecipient 
+        };
 
-        foreach (string toQueue in toQueues)
+        var message = JsonSerializer.Serialize(mqEvent);
+        var body = Encoding.UTF8.GetBytes(message);
+
+        foreach (var toQueue in toQueues)
         {
             await channel.BasicPublishAsync(exchange: string.Empty, routingKey: toQueue, body: body);
         }
