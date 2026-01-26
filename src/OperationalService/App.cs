@@ -1,18 +1,56 @@
 using Messaging;
 using Microsoft.EntityFrameworkCore;
 using Database;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace OperationalService;
 
 public class App
 {
     const string serviceName = "OperationalService";
+    const string loggerName = $"{serviceName}.Logger";
+    const string tracerName = $"{serviceName}.Tracer";
 
     public static readonly DateTime StartTime = DateTime.UtcNow;
+    public static readonly string LoggerName = loggerName;
+    public static readonly string TracerNamer = tracerName;
 
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        builder
+            .Logging
+            .ClearProviders()
+            .AddConsole()
+            .AddDebug()
+            .AddOpenTelemetry(options =>
+            {
+                options
+                    .AddConsoleExporter()
+                    .SetResourceBuilder(
+                        ResourceBuilder
+                            .CreateDefault()
+                            .AddService(LoggerName)
+                    );
+            });
+
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(otelBuilder =>
+            {
+                otelBuilder
+                    .AddSource(serviceName)
+                    .AddAspNetCoreInstrumentation()
+                    .SetResourceBuilder(
+                        ResourceBuilder
+                            .CreateDefault()
+                            .AddService(TracerNamer)
+                    )
+                    .AddConsoleExporter()
+                    .AddJaegerExporter();
+            });
 
         builder.Services.AddAuthorization();
         builder.Services.AddControllers();

@@ -1,9 +1,10 @@
-﻿using Messaging;
+﻿using Database;
+using Database.Entities;
+using Messaging;
 using Messaging.LifecycleEvents;
 using Messaging.WorkEvents;
 using OperationalService.BusinessLogic.Objects;
-using Database;
-using Database.Entities;
+using System.Diagnostics;
 
 namespace OperationalService.BusinessLogic.Services;
 
@@ -33,6 +34,8 @@ public class TradesService(DatabaseContext dbContext)
 
     public int CountTrades()
     {
+        using var _ = Activity.Current!.Source.StartActivity("CountTrades");
+
         var totalItems = dbContext
             .Trades
             .Count();
@@ -42,6 +45,8 @@ public class TradesService(DatabaseContext dbContext)
 
     public IEnumerable<TradeServiceObject> CollectTrades(int page, int pageSize)
     {
+        using var _ = Activity.Current!.Source.StartActivity("CollectTrades");
+
         var trades = dbContext
             .Trades
             .Take(page * pageSize)
@@ -58,6 +63,8 @@ public class TradesService(DatabaseContext dbContext)
 
     public TradeServiceObject? FetchTrade(Guid id)
     {
+        using var _ = Activity.Current!.Source.StartActivity("FetchTrade");
+
         var trade = dbContext
             .Trades
             .SingleOrDefault(t => t.Id == id);
@@ -75,6 +82,8 @@ public class TradesService(DatabaseContext dbContext)
 
     public TradeServiceObject StartTrade(TradeServiceObject trade)
     {
+        using var _ = Activity.Current!.Source.StartActivity("StartTrade");
+
         var tradeId = Guid.NewGuid();
 
         var tradeEntity = new TradeEntity()
