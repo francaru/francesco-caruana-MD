@@ -1,7 +1,9 @@
 using Messaging;
 using Messaging.LifecycleEvents;
+using Microsoft.EntityFrameworkCore;
 using OperationalService.Api.Paths;
 using OperationalService.Logic.Services;
+using OperationalService.Storage;
 
 namespace OperationalService;
 
@@ -11,7 +13,14 @@ public class App
 
     public static readonly DateTime StartTime = DateTime.UtcNow;
 
-    static void StartLifecylceQueues(string[] args)
+    static void StartDatabaseContext(WebApplicationBuilder builder)
+    {
+        builder.Services.AddDbContext<RepositoryContext>(options => {
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DatabaseConnectionString"));
+        });
+    }
+
+    static void StartLifecylceQueues()
     {
         MQClient mqClient = MQClient.GetInstance();
 
@@ -38,16 +47,24 @@ public class App
         );
     }
 
-    static void StartRestAPI(string[] args)
+    static void StartRestAPI(WebApplicationBuilder builder)
     {
-        // Configure a builder for the application.
-        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.Services.AddAuthorization();
-        builder.Services.AddOpenApi();
+
+        // Add OpenAPI specification to the application.
+        builder.Services.AddOpenApi(options =>
+        {
+            HealthApi.AddOpenAPITransformers(options);
+            TradesApi.AddOpenAPITransformers(options);
+        });
 
         // Create an application.
         WebApplication app = builder.Build();
         app.UseAuthorization();
+
+        // Add routes.
+        HealthApi.AddRoutes(app);
+        TradesApi.AddRoutes(app);
 
         // Add OpenAPI specification document if running in development mode.
         if (app.Environment.IsDevelopment())
@@ -55,19 +72,19 @@ public class App
             app.MapOpenApi("openapi.json");
         }
 
-        // Add routes.
-        HealthApi.AddRoutes(app);
-        TradesApi.AddRoutes(app);
-
         // Run the application.
         app.Run();
     }
 
     public static void Main(string[] args)
     {
+        // Configure a builder for the application.
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
         using MQClient mqClient = MQClient.GetInstance(serviceName: serviceName);
 
-        StartLifecylceQueues(args);
-        StartRestAPI(args);
+        StartDatabaseContext(builder);
+        StartLifecylceQueues();
+        StartRestAPI(builder);
     }
 }

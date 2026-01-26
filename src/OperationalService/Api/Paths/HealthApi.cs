@@ -1,4 +1,5 @@
-﻿using OperationalService.Api.Schemas;
+﻿using Microsoft.AspNetCore.OpenApi;
+using OperationalService.Api.Schemas;
 
 namespace OperationalService.Api.Paths;
 
@@ -16,8 +17,16 @@ public class HealthApi
         );
     }
 
+    public static void AddOpenAPITransformers(OpenApiOptions options) { }
+
     public static void AddRoutes(WebApplication app)
     {
-        app.MapGet(Route, CheckHealth).WithName("CheckHealth");
+        var route = app.MapGroup(Route).WithTags("Health");
+
+        route.MapGet(String.Empty, CheckHealth)
+            .WithName("CheckHealth")
+            .WithSummary("Check Health")
+            .WithDescription("Check the server's Health.")
+            .Produces<Health>(StatusCodes.Status200OK);
     }
 }

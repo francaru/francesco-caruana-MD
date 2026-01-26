@@ -4,4 +4,17 @@ This repository contains my solution to a technical assessment provided as part 
 
 # RabbitMQ
 
-docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:latest
+docker run -idt --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:latest
+
+
+# Postgres
+
+docker run -idt --rm --name postgres -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pass -e POSTGRES_DB=db -p 5432:5432 postgres:latest
+
+
+# Databsde Migrations
+
+1. Open Package Mananage Console.
+2. Set the default project to `OperationalService`.
+3. Run `Add-Migration "<MessageWithNoSpaces>"` to generate a new revision.
+4. Run `Update-Database` to apply the revision onto the connected database.
