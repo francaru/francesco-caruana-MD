@@ -1,7 +1,6 @@
-﻿namespace OperationalService.Api.Schemas
+﻿namespace OperationalService.Api.Schemas;
+
+public class Health
 {
-    public class Health
-    {
-        public required TimeSpan UpTime { get; set; }
-    }
+    public required TimeSpan UpTime { get; set; }
 }

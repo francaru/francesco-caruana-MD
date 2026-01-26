@@ -1,9 +1,6 @@
 using Messaging;
-using Messaging.LifecycleEvents;
 using Microsoft.EntityFrameworkCore;
-using OperationalService.Api.Paths;
-using OperationalService.Logic.Services;
-using OperationalService.Storage;
+using Database;
 
 namespace OperationalService;
 
@@ -13,78 +10,32 @@ public class App
 
     public static readonly DateTime StartTime = DateTime.UtcNow;
 
-    static void StartDatabaseContext(WebApplicationBuilder builder)
-    {
-        builder.Services.AddDbContext<RepositoryContext>(options => {
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DatabaseConnectionString"));
-        });
-    }
-
-    static void StartLifecylceQueues()
-    {
-        MQClient mqClient = MQClient.GetInstance();
-
-        string onStatusChangeQueue = $"{serviceName}.OnStatusChange";
-        string onProgressChangeQueue = $"{serviceName}.OnProgressChange";
-
-        mqClient.CreateQueue(queueName: onStatusChangeQueue);
-        mqClient.CreateQueue(queueName: onProgressChangeQueue);
-
-        TradesService tardesService = new();
-
-        mqClient.Consume(
-            onQueue: onStatusChangeQueue,
-            (MQEventInfo eventInfo, StatusChangeEventBody? eventBody) => {
-                tardesService.OnStatusChange(mqClient, eventInfo, eventBody);
-            }
-        );
-
-        mqClient.Consume(
-            onQueue: onProgressChangeQueue,
-            (MQEventInfo eventInfo, ProgressChangeEventBody? eventBody) => {
-                tardesService.OnProgressChange(mqClient, eventInfo, eventBody);
-            }
-        );
-    }
-
-    static void StartRestAPI(WebApplicationBuilder builder)
-    {
-        builder.Services.AddAuthorization();
-
-        // Add OpenAPI specification to the application.
-        builder.Services.AddOpenApi(options =>
-        {
-            HealthApi.AddOpenAPITransformers(options);
-            TradesApi.AddOpenAPITransformers(options);
-        });
-
-        // Create an application.
-        WebApplication app = builder.Build();
-        app.UseAuthorization();
-
-        // Add routes.
-        HealthApi.AddRoutes(app);
-        TradesApi.AddRoutes(app);
-
-        // Add OpenAPI specification document if running in development mode.
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi("openapi.json");
-        }
-
-        // Run the application.
-        app.Run();
-    }
-
     public static void Main(string[] args)
     {
-        // Configure a builder for the application.
-        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder(args);
 
-        using MQClient mqClient = MQClient.GetInstance(serviceName: serviceName);
+        builder.Services.AddAuthorization();
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+        builder.Services.AddDbContext<DatabaseContext>(options => {
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DatabaseConnectionString"));
+        });
 
-        StartDatabaseContext(builder);
-        StartLifecylceQueues();
-        StartRestAPI(builder);
+        var app = builder.Build();
+        using var mqClient = MQClient
+            .Connect(serviceName: serviceName, serviceProvider: app.Services)
+            .Subscribe();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
+        app.UseAuthorization();
+        app.MapControllers();
+
+        app.Run();
     }
 }
