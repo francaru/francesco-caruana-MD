@@ -10,8 +10,14 @@ namespace OperationalService.BusinessLogic.Services;
 
 public class TradesService(DatabaseContext dbContext)
 {
-    public void OnStatusChange(MQClient mqClient, MQEventInfo eventInfo, TradeStatusChangeEventBody? eventBody)
+    public void OnStatusChange(MQClient mqClient, ActivitySource activitySource, ILoggerProvider loggerProvider, MQEventInfo eventInfo, TradeStatusChangeEventBody? eventBody)
     {
+        using var _ = activitySource.StartActivity("OnStatusChange");
+
+        var logger = loggerProvider.CreateLogger(eventInfo.QueueName);
+
+        logger.LogInformation($"Received trade status update from: `{eventInfo.Sender.ServiceName}`.");
+
         var parsedId = Guid.Parse(eventBody!.TradeId);
 
         var tradeInfo = dbContext
@@ -20,6 +26,8 @@ public class TradesService(DatabaseContext dbContext)
 
         if (tradeInfo is not null)
         {
+            logger.LogInformation($"Loaded trade information for trade with ID: `{eventBody.TradeId}`.");
+
             tradeInfo.Status = eventBody.NewStatus;
 
             dbContext
@@ -28,7 +36,7 @@ public class TradesService(DatabaseContext dbContext)
 
             dbContext.SaveChanges();
 
-            Console.WriteLine($"Trade `{eventBody.TradeId}` status changed: `{eventBody.PreviousStatus}` -> `{eventBody.NewStatus}`");
+            logger.LogInformation($"Status changed for trade `{eventBody.TradeId}`: `{eventBody.PreviousStatus}` -> `{eventBody.NewStatus}`.");
         }
     }
 

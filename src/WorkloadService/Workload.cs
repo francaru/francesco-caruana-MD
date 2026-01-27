@@ -11,7 +11,6 @@ public class Workload
 
     public static void TradeDoWork(MQClient mqClient, MQEventInfo eventInfo, TradeDoWorkEventBody? eventBody)
     {
-        // Replace with logging.
         Console.WriteLine($"Starting trade: {eventBody!.TradeId}");
 
         mqClient.Produce(
@@ -35,7 +34,6 @@ public class Workload
             }
         );
         
-        // Replace with logging.
         Console.WriteLine($"Completed trade: {eventBody!.TradeId}");
     }
 
