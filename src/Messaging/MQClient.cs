@@ -21,12 +21,15 @@ public class MQClient : IDisposable
 
     public string ServiceName { get; init; }
 
-    MQClient(string serviceName, IServiceProvider? serviceProvider) 
+    public string HostName { get; init; }
+
+    MQClient(string hostName, string serviceName, IServiceProvider? serviceProvider) 
     {
-        factory = new() { HostName = "localhost" };
+        factory = new() { HostName = hostName };
         connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
         channel = connection.CreateChannelAsync().GetAwaiter().GetResult();
-        
+
+        HostName = hostName;
         ServiceName = serviceName;
         ServiceProvider = serviceProvider;
     }
@@ -44,12 +47,12 @@ public class MQClient : IDisposable
             throw new InvalidOperationException("First call to GetInstance requires a service name.");
         }
 
-        return Connect(instance.ServiceName, instance.ServiceProvider);
+        return Connect(instance.HostName, instance.ServiceName, instance.ServiceProvider);
     }
 
-    public static MQClient Connect(string serviceName, IServiceProvider? serviceProvider = null)
+    public static MQClient Connect(string hostName, string serviceName, IServiceProvider? serviceProvider = null)
     {
-        instance ??= new(serviceName: serviceName, serviceProvider: serviceProvider);
+        instance ??= new(hostName: hostName, serviceName: serviceName, serviceProvider: serviceProvider);
 
         return instance;
     }

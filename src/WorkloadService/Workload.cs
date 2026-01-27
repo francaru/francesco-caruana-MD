@@ -1,4 +1,4 @@
-﻿using Database;
+﻿using CommandLine;
 using Messaging;
 using Messaging.LifecycleEvents;
 using Messaging.WorkEvents;
@@ -37,12 +37,20 @@ public class Workload
         Console.WriteLine($"Completed trade: {eventBody!.TradeId}");
     }
 
-    static void Main(string[] args)
+    class Options
     {
+        [Option("rabbitmq-host", HelpText = "Host where to connect to RabbitMQ", Default = "localhost")]
+        public required string RabbitMQHost { get; set; }
+    }
+
+    static async Task Main(string[] args)
+    {
+        var options = Parser.Default.ParseArguments<Options>(args).Value;
+
         using var mqClient = MQClient
-            .Connect(serviceName: serviceName)
+            .Connect(hostName: options.RabbitMQHost, serviceName: serviceName)
             .Subscribe();
 
-        Console.ReadKey();
+        await Task.Delay(Timeout.Infinite);
     }
 }
