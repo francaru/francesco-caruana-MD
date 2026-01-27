@@ -8,13 +8,11 @@ namespace OperationalService;
 
 public static class Extensions
 {
-    public static MQClient Subscribe(this MQClient mqClient)
+    public static IMessageHandler Subscribe(this IMessageHandler mqClient)
     {
         var onStatusChangeQueue = $"{mqClient.ServiceName}.BusinessLogic.Service.TradesService::OnStatusChange";
-        var onProgressChangeQueue = $"{mqClient.ServiceName}.BusinessLogic.Service.TradesService::OnProgressChange";
 
         mqClient.CreateQueue(queueName: onStatusChangeQueue);
-        mqClient.CreateQueue(queueName: onProgressChangeQueue);
 
         mqClient.Consume(
             onQueue: onStatusChangeQueue,

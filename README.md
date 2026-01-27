@@ -5,6 +5,31 @@ The goal of this project is to demonstrate my approach to backend service design
 
 ---
 
+## Table of Contents
+
+1. [Project Overview](#project-overview)
+
+   * [Services](#services)
+   * [Communication & Observability](#communication--observability)
+2. [Architecture Highlights](#architecture-highlights)
+3. [Architecture Diagram](#architecture-diagram)
+4. [Starting the Services](#starting-the-services)
+
+   * [Prerequisites](#prerequisites)
+   * [Step 1: Start the infrastructure and services](#step-1-start-the-infrastructure-and-services)
+   * [Step 2: Initialize the database](#step-2-initialize-the-database)
+5. [Trace Visualization](#trace-visualization)
+6. [API Usage Examples](#api-usage-examples)
+
+   * [Create a New Trade](#create-a-new-trade)
+   * [Get All Trades](#get-all-trades)
+7. [Swagger UI](#swagger-ui)
+8. [Jaeger UI](#jaeger-ui)
+9. [Future Improvements & Reflections](#future-improvements--reflections)
+10. [Conclusion](#conclusion)
+
+---
+
 ## Project Overview
 
 The solution is composed of **two independent services** that work together to manage and execute trades in an asynchronous, event-driven manner.
@@ -172,7 +197,7 @@ The Swagger UI provides a convenient way to inspect available endpoints, request
 
 ---
 
-## Trace Visualization
+## Jaeger UI
 
 All distributed traces emitted by the `OperationalService` are exported using OpenTelemetry and can be visualized using Jaeger:
 
@@ -181,3 +206,28 @@ All distributed traces emitted by the `OperationalService` are exported using Op
 The Jaeger UI allows you to inspect request lifecycles end-to-end, including database interactions and asynchronous messaging flows between services.
 
 ![Jaeger UI](docs/jaeger.png)
+
+## Future Improvements & Reflections
+
+While this project demonstrates a functional microservice architecture with asynchronous message-driven communication, there are several areas I would have liked to explore further if time allowed:
+
+* **Expanded Test Coverage** – I would have added more unit and integration tests to achieve closer to 100% code coverage, ensuring that edge cases and failure scenarios are fully captured.
+* **Native Dependency Injection for RabbitMQ** – Experimenting with native DI patterns for messaging would have improved testability, configurability, and alignment with modern .NET Core practices.
+* **Dynamic Worker Management** – In my initial design, the `OperationalService` (master) would expose an endpoint to dynamically create additional `WorkloadService` workers. This approach would have involved:
+
+  * Spawning new containers on-demand via Docker.
+  * Tracking container lifecycle events (start/stop/die) through a listener and updating the message queue registration.
+    While conceptually appealing for scaling workloads, this added significant architectural complexity and could have made the system flow harder to understand in a limited-time assessment.
+
+### Methodology Reflection
+
+This project follows a **master-worker microservice pattern**, with:
+
+* The **OperationalService** acting as the master, managing trades and publishing messages.
+* The **WorkloadService** acting as a worker, asynchronously processing trades based on messages received via RabbitMQ.
+
+A key consideration in this design is that workers must be available and running to consume messages. This influenced my decision to simplify dynamic worker creation, ensuring clarity in the overall architecture while still demonstrating event-driven, asynchronous processing principles.
+
+### Conclusion
+
+Overall, this project was an opportunity to familiarize myself with **modern C#/.NET Core standards**, **containerized microservices**, and **observability practices**, while balancing functionality, maintainability, and reviewer comprehension.

@@ -8,7 +8,7 @@ namespace WorkloadService;
 
 public static class Extensions
 {
-    public static MQClient Subscribe(this MQClient mqClient)
+    public static IMessageHandler Subscribe(this IMessageHandler mqClient)
     {
         var doWorkQueue = $"{mqClient.ServiceName}.Workload::TradeDoWork";
 
@@ -16,8 +16,8 @@ public static class Extensions
 
         mqClient.Consume(
             onQueue: doWorkQueue,
-            (DatabaseContext _, ActivitySource _, ILoggerProvider logger, MQEventInfo eventInfo, TradeDoWorkEventBody? eventBody) => {
-                Workload.TradeDoWork(mqClient, eventInfo, eventBody);
+            async (DatabaseContext _, ActivitySource _, ILoggerProvider logger, MQEventInfo eventInfo, TradeDoWorkEventBody? eventBody) => {
+                await Workload.TradeDoWork(mqClient, eventInfo, eventBody);
             }
         );
 

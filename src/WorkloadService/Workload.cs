@@ -9,7 +9,7 @@ public class Workload
 {
     const string serviceName = "WorkloadService";
 
-    public static void TradeDoWork(MQClient mqClient, MQEventInfo eventInfo, TradeDoWorkEventBody? eventBody)
+    public static async Task TradeDoWork(IMessageHandler mqClient, MQEventInfo eventInfo, TradeDoWorkEventBody? eventBody, Func<Task>? delay = null)
     {
         Console.WriteLine($"Starting trade: {eventBody!.TradeId}");
 
@@ -22,7 +22,8 @@ public class Workload
             }
         );
 
-        Thread.Sleep(10000);
+        delay ??= () => Task.Delay(10_000);
+        await delay();
 
         mqClient.Produce(
             toQueues: ["OperationalService.BusinessLogic.Service.TradesService::OnStatusChange"],

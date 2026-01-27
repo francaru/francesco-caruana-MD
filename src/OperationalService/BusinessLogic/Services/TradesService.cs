@@ -10,7 +10,7 @@ namespace OperationalService.BusinessLogic.Services;
 
 public class TradesService(DatabaseContext dbContext)
 {
-    public void OnStatusChange(MQClient mqClient, ActivitySource activitySource, ILoggerProvider loggerProvider, MQEventInfo eventInfo, TradeStatusChangeEventBody? eventBody)
+    public void OnStatusChange(IMessageHandler mqClient, ActivitySource activitySource, ILoggerProvider loggerProvider, MQEventInfo eventInfo, TradeStatusChangeEventBody? eventBody)
     {
         using var _ = activitySource.StartActivity("OnStatusChange");
 

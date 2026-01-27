@@ -10,7 +10,7 @@ using System.Text.Json.Nodes;
 
 namespace Messaging;
 
-public class MQClient : IDisposable
+public class MQClient : IMessageHandler
 {
     private static MQClient? instance;
     private readonly ConnectionFactory factory;
