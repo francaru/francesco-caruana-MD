@@ -1,6 +1,6 @@
+using Database;
 using Messaging;
 using Microsoft.EntityFrameworkCore;
-using Database;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -51,7 +51,10 @@ public class App
                             .AddService(TracerNamer)
                     )
                     .AddConsoleExporter()
-                    .AddJaegerExporter();
+                    .AddJaegerExporter(conf =>
+                    {
+                        conf.AgentHost = builder.Configuration.GetSection("Jaeger").GetValue<string>("Host");
+                    });
             });
 
         builder.Services.AddSingleton(new ActivitySource(TracerNamer));
@@ -65,7 +68,11 @@ public class App
 
         var app = builder.Build();
         using var mqClient = MQClient
-            .Connect(serviceName: serviceName, serviceProvider: app.Services)
+            .Connect(
+                hostName: builder.Configuration.GetSection("RabbitMQ").GetValue<string>("Host")!,
+                serviceName: serviceName, 
+                serviceProvider: app.Services
+            )
             .Subscribe();
 
         if (app.Environment.IsDevelopment())
