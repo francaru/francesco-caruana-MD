@@ -1,7 +1,9 @@
 ﻿using Database;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -63,7 +65,7 @@ public class MQClient : IDisposable
         );
     }
 
-    public async void Consume<T>(string onQueue, params Action<MQEventInfo, DatabaseContext, T?>[] consumerActions) where T : MQEventBody
+    public async void Consume<T>(string onQueue, params Action<DatabaseContext, ActivitySource, ILoggerProvider, MQEventInfo, T?>[] consumerActions) where T : MQEventBody
     {
         var consumer = new AsyncEventingBasicConsumer(channel);
 
@@ -87,19 +89,13 @@ public class MQClient : IDisposable
                     {
                         new Thread(() =>
                         {
-                            using var scope = (ServiceProvider is null) switch
-                            {
-                                true => null,
-                                false => ServiceProvider.CreateScope()
-                            };
+                            using var scope = (ServiceProvider is null) ? null : ServiceProvider.CreateScope();
 
-                            var dbContext = (scope is null) switch
-                            {
-                                true => null,
-                                false => scope.ServiceProvider.GetRequiredService<DatabaseContext>()
-                            };
+                            var dbContext = (scope is null) ? null : scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                            var activitySource = (scope is null) ? null : scope.ServiceProvider.GetRequiredService<ActivitySource>();
+                            var loggerProvider = (scope is null) ? null : scope.ServiceProvider.GetRequiredService<ILoggerProvider>();
 
-                            consumerAction(queueEventInfo, dbContext!, mqEvent.Body);
+                            consumerAction(dbContext!, activitySource!, loggerProvider!, queueEventInfo, mqEvent.Body);
                         }).Start();
                     }
                 }

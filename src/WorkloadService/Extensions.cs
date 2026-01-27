@@ -1,6 +1,8 @@
 ﻿using Database;
 using Messaging;
 using Messaging.WorkEvents;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace WorkloadService;
 
@@ -14,7 +16,7 @@ public static class Extensions
 
         mqClient.Consume(
             onQueue: doWorkQueue,
-            (MQEventInfo eventInfo, DatabaseContext _, TradeDoWorkEventBody? eventBody) => {
+            (DatabaseContext _, ActivitySource _, ILoggerProvider logger, MQEventInfo eventInfo, TradeDoWorkEventBody? eventBody) => {
                 Workload.TradeDoWork(mqClient, eventInfo, eventBody);
             }
         );

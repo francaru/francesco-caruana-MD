@@ -4,6 +4,7 @@ using Database;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using System.Diagnostics;
 
 namespace OperationalService;
 
@@ -53,6 +54,7 @@ public class App
                     .AddJaegerExporter();
             });
 
+        builder.Services.AddSingleton(new ActivitySource(TracerNamer));
         builder.Services.AddAuthorization();
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();

@@ -2,6 +2,7 @@
 using Messaging;
 using Messaging.LifecycleEvents;
 using OperationalService.BusinessLogic.Services;
+using System.Diagnostics;
 
 namespace OperationalService;
 
@@ -17,8 +18,8 @@ public static class Extensions
 
         mqClient.Consume(
             onQueue: onStatusChangeQueue,
-            (MQEventInfo eventInfo, DatabaseContext dbContext, TradeStatusChangeEventBody? eventBody) => {
-                new TradesService(dbContext).OnStatusChange(mqClient, eventInfo, eventBody);
+            (DatabaseContext dbContext, ActivitySource activitySource, ILoggerProvider loggerProvider, MQEventInfo eventInfo, TradeStatusChangeEventBody? eventBody) => {
+                new TradesService(dbContext).OnStatusChange(mqClient, activitySource, loggerProvider, eventInfo, eventBody);
             }
         );
 
