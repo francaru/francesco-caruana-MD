@@ -8,20 +8,51 @@ using System.Diagnostics;
 
 namespace OperationalService;
 
+/// <summary>
+/// Entry point for the operational service.
+/// </summary>
 public class App
 {
+    /// <summary>
+    /// The name of the service.
+    /// </summary>
     const string serviceName = "OperationalService";
+
+    /// <summary>
+    /// The name of the service's logger.
+    /// </summary>
     const string loggerName = $"{serviceName}.Logger";
+
+    /// <summary>
+    /// The name of the service's tracer.
+    /// </summary>
     const string tracerName = $"{serviceName}.Tracer";
 
+    /// <summary>
+    /// The date and time when the service was started.
+    /// </summary>
     public static readonly DateTime StartTime = DateTime.UtcNow;
-    public static readonly string LoggerName = loggerName;
-    public static readonly string TracerNamer = tracerName;
 
+    /// <summary>
+    /// The name of the service's logger.
+    /// </summary>
+    public static readonly string LoggerName = loggerName;
+
+    /// <summary>
+    /// The name of the service's tracer.
+    /// </summary>
+    public static readonly string TracerName = tracerName;
+
+    /// <summary>
+    /// The main method of this application.
+    /// </summary>
+    /// <param name="args">Console arguments that are passed when launching the application.</param>
     public static void Main(string[] args)
     {
+        // Create a web application builder.
         var builder = WebApplication.CreateBuilder(args);
 
+        // Add a logging provider using OpenTelemetery tools.
         builder
             .Logging
             .ClearProviders()
@@ -39,6 +70,7 @@ public class App
                     .AddProcessor(new ActivityEventLogProcessor());
             });
 
+        // Add a tracing provider using OpenTelemetery tools.
         builder.Services.AddOpenTelemetry()
             .WithTracing(otelBuilder =>
             {
@@ -48,7 +80,7 @@ public class App
                     .SetResourceBuilder(
                         ResourceBuilder
                             .CreateDefault()
-                            .AddService(TracerNamer)
+                            .AddService(TracerName)
                     )
                     .AddConsoleExporter()
                     .AddJaegerExporter(conf =>
@@ -57,16 +89,22 @@ public class App
                     });
             });
 
-        builder.Services.AddSingleton(new ActivitySource(TracerNamer));
+        // Add DI services to the application.
+        builder.Services.AddSingleton(new ActivitySource(TracerName));
         builder.Services.AddAuthorization();
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        // DI a Database context with a connection string provided through appsettings.json.
         builder.Services.AddDbContext<DatabaseContext>(options => {
             options.UseNpgsql(builder.Configuration.GetConnectionString("DatabaseConnectionString"));
         });
 
+        // Create the application.
         var app = builder.Build();
+
+        // A message handler instance is created using the information from the provided options.
         using var mqClient = MQClient
             .Connect(
                 hostName: builder.Configuration.GetSection("RabbitMQ").GetValue<string>("Host")!,
@@ -75,15 +113,11 @@ public class App
             )
             .Subscribe();
 
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-
+        // Run the application.
+        app.UseSwagger();
+        app.UseSwaggerUI();
         app.UseAuthorization();
         app.MapControllers();
-
         app.Run();
     }
 }

@@ -7,6 +7,10 @@ using System.ComponentModel;
 
 namespace OperationalService.Api.Controllers;
 
+/// <summary>
+/// Controller for managing trades.
+/// </summary>
+/// <param name="dbContext">The currently connected database context.</param>
 [Route("[controller]")]
 [ApiController]
 public class TradesController(DatabaseContext dbContext) : ControllerBase

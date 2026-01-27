@@ -8,6 +8,10 @@ using System.Diagnostics;
 
 namespace OperationalService.BusinessLogic.Services;
 
+/// <summary>
+/// A service for the handling of trades business logic.
+/// </summary>
+/// <param name="dbContext">The currently connected database context.</param>
 public class TradesService(DatabaseContext dbContext)
 {
     public void OnStatusChange(IMessageHandler mqClient, ActivitySource activitySource, ILoggerProvider loggerProvider, MQEventInfo eventInfo, TradeStatusChangeEventBody? eventBody)
