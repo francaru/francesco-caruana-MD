@@ -8,6 +8,11 @@ services:
       - "5672:5672"
       - "15672:15672"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   postgres:
     image: postgres:18.1
@@ -19,6 +24,11 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   jaeger:
     image: jaegertracing/all-in-one:1.21
@@ -35,9 +45,10 @@ services:
       dockerfile: src/OperationalService/Dockerfile
     container_name: operationalservice
     depends_on:
-      - rabbitmq
-      - postgres
-      - jaeger
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DatabaseConnectionString: Host=postgres;Port=5432;Database=db;Username=user;Password=pass
@@ -54,6 +65,5 @@ services:
     container_name: workloadservice
     command: --rabbitmq-host rabbitmq
     depends_on:
-      - rabbitmq
-      - postgres
-      - jaeger
+      rabbitmq:
+        condition: service_healthy

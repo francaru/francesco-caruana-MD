@@ -6,20 +6,26 @@ using System.Diagnostics;
 
 namespace OperationalService;
 
+/// <summary>
+/// A static class for extending dependency functionality.
+/// </summary>
 public static class Extensions
 {
-    public static MQClient Subscribe(this MQClient mqClient)
+    /// <summary>
+    /// Subscribe to a list of queues that pertain to the service.
+    /// </summary>
+    /// <param name="mqClient">The message handler instance being extended.</param>
+    /// <returns>The extended message handler instance.</returns>
+    public static IMessageHandler Subscribe(this IMessageHandler mqClient)
     {
+        /// 1. Create a queue for the specified queue name.
+        /// 2. Create a consumer that listens for events on the specified queue name.
         var onStatusChangeQueue = $"{mqClient.ServiceName}.BusinessLogic.Service.TradesService::OnStatusChange";
-        var onProgressChangeQueue = $"{mqClient.ServiceName}.BusinessLogic.Service.TradesService::OnProgressChange";
-
         mqClient.CreateQueue(queueName: onStatusChangeQueue);
-        mqClient.CreateQueue(queueName: onProgressChangeQueue);
-
         mqClient.Consume(
             onQueue: onStatusChangeQueue,
-            (DatabaseContext dbContext, ActivitySource activitySource, ILoggerProvider loggerProvider, MQEventInfo eventInfo, TradeStatusChangeEventBody? eventBody) => {
-                new TradesService(dbContext).OnStatusChange(mqClient, activitySource, loggerProvider, eventInfo, eventBody);
+            (DatabaseContext dbContext, ActivitySource activitySource, ILoggerFactory loggerFactory, MQEventInfo eventInfo, TradeStatusChangeEventBody? eventBody) => {
+                new TradesService(dbContext, mqClient).OnStatusChange(activitySource, loggerFactory, eventInfo, eventBody);
             }
         );
 

@@ -14,6 +14,5 @@
   <Project Path="src/OperationalService/OperationalService.csproj" Id="fb2102a9-566a-4453-9747-612796cf96fd" />
   <Project Path="src/WorkloadService/WorkloadService.csproj" Id="64fbc717-02a0-4740-ac5e-cc3d8ac77c4f" />
   <Project Path="tests/OperationalService.Tests/OperationalService.Tests.csproj" Id="831e2060-ee62-42c7-b035-027f530473f9" />
-  <Project Path="tests/TestingUtilities/TestingUtilities.csproj" Id="cc3dd098-1bb5-4701-b0da-1905262cda6c" />
   <Project Path="tests/WorkloadService.Tests/WorkloadService.Tests.csproj" Id="16dd1c70-db08-495c-b163-285a16f1fcd9" />
 </Solution>

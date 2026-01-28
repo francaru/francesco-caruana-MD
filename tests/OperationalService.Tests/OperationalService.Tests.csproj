@@ -10,16 +10,16 @@
   <ItemGroup>
 	<PackageReference Include="MSTest" Version="4.0.1" />
 	<PackageReference Include="coverlet.collector" Version="6.0.0" />
+	<PackageReference Include="Moq" Version="4.20.72" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OperationalService\OperationalService.csproj" />
-    <ProjectReference Include="..\TestingUtilities\TestingUtilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
-	<Using Include="TestingUtilities" />
 	<Using Include="OperationalService" />
   </ItemGroup>
 
