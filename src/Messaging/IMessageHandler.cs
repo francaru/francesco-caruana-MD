@@ -34,5 +34,5 @@ public interface IMessageHandler : IDisposable
     /// <typeparam name="T">The type of the object that is expected to be received when an event enters the queue.</typeparam>
     /// <param name="onQueue">The name of the queue on which to subscribe.</param>
     /// <param name="consumerActions">A collection of consumer functions that are triggered when an event enters the queue.</param>
-    void Consume<T>(string onQueue, params Action<DatabaseContext, ActivitySource, ILoggerProvider, MQEventInfo, T?>[] consumerActions) where T : MQEventBody;
+    void Consume<T>(string onQueue, params Action<DatabaseContext, ActivitySource, ILoggerFactory, MQEventInfo, T?>[] consumerActions) where T : MQEventBody;
 }

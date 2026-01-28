@@ -131,7 +131,7 @@ public class MQClient : IMessageHandler
     /// <typeparam name="T">The type of the object that is expected to be received when an event enters the queue.</typeparam>
     /// <param name="onQueue">The name of the queue on which to subscribe.</param>
     /// <param name="consumerActions">A collection of consumer functions that are triggered when an event enters the queue.</param>
-    public async void Consume<T>(string onQueue, params Action<DatabaseContext, ActivitySource, ILoggerProvider, MQEventInfo, T?>[] consumerActions) where T : MQEventBody
+    public async void Consume<T>(string onQueue, params Action<DatabaseContext, ActivitySource, ILoggerFactory, MQEventInfo, T?>[] consumerActions) where T : MQEventBody
     {
         // Create a new consumer.
         var consumer = new AsyncEventingBasicConsumer(channel);
@@ -169,9 +169,9 @@ public class MQClient : IMessageHandler
 
                             var dbContext = (scope is null) ? null : scope.ServiceProvider.GetRequiredService<DatabaseContext>();
                             var activitySource = (scope is null) ? null : scope.ServiceProvider.GetRequiredService<ActivitySource>();
-                            var loggerProvider = (scope is null) ? null : scope.ServiceProvider.GetRequiredService<ILoggerProvider>();
+                            var loggerFactory = (scope is null) ? null : new LoggerFactory([scope.ServiceProvider.GetRequiredService<ILoggerProvider>()]);
 
-                            consumerAction(dbContext!, activitySource!, loggerProvider!, queueEventInfo, mqEvent.Body);
+                            consumerAction(dbContext!, activitySource!, loggerFactory!, queueEventInfo, mqEvent.Body);
                         }).Start();
                     }
                 }

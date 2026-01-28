@@ -26,7 +26,7 @@ public class ExtensionsTests
         mqClient.Verify(m =>
             m.Consume(
                 It.IsAny<string>(),
-                It.IsAny<Action<DatabaseContext, ActivitySource, ILoggerProvider, MQEventInfo, TradeStatusChangeEventBody?>>()),
+                It.IsAny<Action<DatabaseContext, ActivitySource, ILoggerFactory, MQEventInfo, TradeStatusChangeEventBody?>>()),
             Times.Once);
     }
 }

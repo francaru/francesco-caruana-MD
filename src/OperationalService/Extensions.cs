@@ -24,8 +24,8 @@ public static class Extensions
         mqClient.CreateQueue(queueName: onStatusChangeQueue);
         mqClient.Consume(
             onQueue: onStatusChangeQueue,
-            (DatabaseContext dbContext, ActivitySource activitySource, ILoggerProvider loggerProvider, MQEventInfo eventInfo, TradeStatusChangeEventBody? eventBody) => {
-                new TradesService(dbContext).OnStatusChange(mqClient, activitySource, loggerProvider, eventInfo, eventBody);
+            (DatabaseContext dbContext, ActivitySource activitySource, ILoggerFactory loggerFactory, MQEventInfo eventInfo, TradeStatusChangeEventBody? eventBody) => {
+                new TradesService(dbContext, mqClient).OnStatusChange(activitySource, loggerFactory, eventInfo, eventBody);
             }
         );
 

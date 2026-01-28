@@ -24,7 +24,7 @@ public static class Extensions
         mqClient.CreateQueue(queueName: doWorkQueue);
         mqClient.Consume(
             onQueue: doWorkQueue,
-            async (DatabaseContext _, ActivitySource _, ILoggerProvider logger, MQEventInfo eventInfo, TradeDoWorkEventBody? eventBody) => {
+            async (DatabaseContext _, ActivitySource _, ILoggerFactory logger, MQEventInfo eventInfo, TradeDoWorkEventBody? eventBody) => {
                 await Workload.TradeDoWork(mqClient, eventInfo, eventBody);
             }
         );

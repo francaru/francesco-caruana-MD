@@ -90,11 +90,18 @@ public class App
             });
 
         // Add DI services to the application.
-        builder.Services.AddSingleton(new ActivitySource(TracerName));
         builder.Services.AddAuthorization();
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        builder.Services.AddSingleton(new ActivitySource(TracerName));
+        builder.Services.AddSingleton(sp =>
+            MQClient.Connect(
+                hostName: builder.Configuration["RabbitMQ:Host"]!,
+                serviceName: serviceName,
+                serviceProvider: sp
+            ).Subscribe()
+        );
 
         // DI a Database context with a connection string provided through appsettings.json.
         builder.Services.AddDbContext<DatabaseContext>(options => {
@@ -103,15 +110,6 @@ public class App
 
         // Create the application.
         var app = builder.Build();
-
-        // A message handler instance is created using the information from the provided options.
-        using var mqClient = MQClient
-            .Connect(
-                hostName: builder.Configuration.GetSection("RabbitMQ").GetValue<string>("Host")!,
-                serviceName: serviceName, 
-                serviceProvider: app.Services
-            )
-            .Subscribe();
 
         // Run the application.
         app.UseSwagger();
